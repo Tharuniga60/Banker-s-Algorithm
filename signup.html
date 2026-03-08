@@ -1,0 +1,338 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Sign Up | Banker's Algorithm Simulator</title>
+    <meta name="description" content="Create your free account to access the Banker's Algorithm Simulator." />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+        href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=Poppins:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap"
+        rel="stylesheet" />
+    <link rel="stylesheet" href="style.css" />
+    <link rel="stylesheet" href="pages.css" />
+</head>
+
+<body>
+
+    <div class="bg-particles" id="bgParticles"></div>
+
+    <!-- Navbar -->
+    <nav class="navbar" id="navbar">
+        <div class="nav-inner">
+            <a href="index.html" class="nav-logo">
+                <div class="logo-icon">
+                    <svg viewBox="0 0 36 36" fill="none">
+                        <circle cx="18" cy="18" r="17" stroke="url(#lg1)" stroke-width="2" />
+                        <path d="M10 18h6m10 0h-6m-4-6v6m0 6v-6" stroke="url(#lg2)" stroke-width="2.5"
+                            stroke-linecap="round" />
+                        <defs>
+                            <linearGradient id="lg1" x1="0" y1="0" x2="36" y2="36" gradientUnits="userSpaceOnUse">
+                                <stop stop-color="#a78bfa" />
+                                <stop offset="1" stop-color="#38bdf8" />
+                            </linearGradient>
+                            <linearGradient id="lg2" x1="0" y1="0" x2="36" y2="36" gradientUnits="userSpaceOnUse">
+                                <stop stop-color="#f472b6" />
+                                <stop offset="1" stop-color="#a78bfa" />
+                            </linearGradient>
+                        </defs>
+                    </svg>
+                </div>
+                <div class="logo-text">
+                    <span class="logo-title">Banker's Algorithm</span>
+                    <span class="logo-sub">OS Simulator</span>
+                </div>
+            </a>
+            <ul class="nav-links" id="navLinks">
+                <li><a href="index.html" class="nav-link">Home</a></li>
+                <li><a href="simulator.html" class="nav-link">Simulator</a></li>
+                <li id="navLoginBtn"><a href="login.html" class="nav-link">Login</a></li>
+                <li id="navSignupBtn"><a href="signup.html" class="btn btn-primary btn-sm active">Sign Up</a></li>
+                <li id="navUser" style="display:none;" class="nav-user-chip"><span class="nav-user-avatar"
+                        id="navAvatarLetter">U</span><span class="nav-user-name">User</span></li>
+                <li id="navLogoutBtn" style="display:none;"><button class="btn btn-ghost btn-sm"
+                        onclick="logoutUser()">Logout</button></li>
+            </ul>
+            <button class="hamburger" id="hamburger" aria-label="Menu"><span></span><span></span><span></span></button>
+        </div>
+    </nav>
+
+    <!-- Auth Page Layout -->
+    <div class="auth-page">
+        <!-- Left panel -->
+        <div class="auth-panel-left">
+            <div class="auth-deco-content">
+                <div class="auth-deco-orbit">
+                    <div class="orbit-ring ring1"></div>
+                    <div class="orbit-ring ring2"></div>
+                    <div class="orbit-ring ring3"></div>
+                    <div class="center-planet">
+                        <svg viewBox="0 0 54 54" fill="none">
+                            <circle cx="27" cy="27" r="23" fill="url(#dg2)" />
+                            <path d="M19 27l5 5 10-10" stroke="white" stroke-width="3" stroke-linecap="round"
+                                stroke-linejoin="round" />
+                            <defs>
+                                <radialGradient id="dg2" cx="38%" cy="32%">
+                                    <stop stop-color="#34d399" />
+                                    <stop offset="1" stop-color="#059669" />
+                                </radialGradient>
+                            </defs>
+                        </svg>
+                    </div>
+                </div>
+
+                <h2 class="auth-deco-title">Join the Simulator!</h2>
+                <p class="auth-deco-desc">Create your free account and get instant access to the interactive Banker's
+                    Algorithm Simulator — no credit card, no hassle.</p>
+
+                <div class="auth-deco-features">
+                    <div class="adf-item">
+                        <span class="adf-icon">🆓</span>
+                        <span>Completely free to use</span>
+                    </div>
+                    <div class="adf-item">
+                        <span class="adf-icon">⚡</span>
+                        <span>Instant access after signup</span>
+                    </div>
+                    <div class="adf-item">
+                        <span class="adf-icon">🔐</span>
+                        <span>Data stored locally — private</span>
+                    </div>
+                    <div class="adf-item">
+                        <span class="adf-icon">📚</span>
+                        <span>Built for OS students &amp; developers</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Right form panel -->
+        <div class="auth-panel-right">
+            <div class="auth-card glass-card">
+                <div class="auth-card-header">
+                    <h1 class="auth-card-title">Create Account</h1>
+                    <p class="auth-card-subtitle">Fill in the details below to get started</p>
+                </div>
+
+                <form id="signupForm" class="auth-form" novalidate>
+
+                    <div class="form-group" id="nameGroup">
+                        <label class="form-label" for="signupName">Full Name</label>
+                        <div class="form-input-wrap">
+                            <span class="form-input-icon">
+                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                    <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2" />
+                                    <circle cx="12" cy="7" r="4" />
+                                </svg>
+                            </span>
+                            <input type="text" id="signupName" class="form-input" placeholder="John Doe"
+                                autocomplete="name" required />
+                        </div>
+                        <span class="form-error" id="nameError"></span>
+                    </div>
+
+                    <div class="form-group" id="emailGroup">
+                        <label class="form-label" for="signupEmail">Email Address</label>
+                        <div class="form-input-wrap">
+                            <span class="form-input-icon">
+                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                    <path
+                                        d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z" />
+                                    <polyline points="22,6 12,13 2,6" />
+                                </svg>
+                            </span>
+                            <input type="email" id="signupEmail" class="form-input" placeholder="you@example.com"
+                                autocomplete="email" required />
+                        </div>
+                        <span class="form-error" id="emailError"></span>
+                    </div>
+
+                    <div class="form-group" id="passwordGroup">
+                        <label class="form-label" for="signupPassword">Password</label>
+                        <div class="form-input-wrap">
+                            <span class="form-input-icon">
+                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                    <rect x="3" y="11" width="18" height="11" rx="2" ry="2" />
+                                    <path d="M7 11V7a5 5 0 0 1 10 0v4" />
+                                </svg>
+                            </span>
+                            <input type="password" id="signupPassword" class="form-input"
+                                placeholder="Min. 6 characters" autocomplete="new-password" required />
+                            <button type="button" class="toggle-pass" id="toggleSignupPass" aria-label="Toggle">
+                                <svg id="eyeOnSignup" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                                    stroke-width="2">
+                                    <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z" />
+                                    <circle cx="12" cy="12" r="3" />
+                                </svg>
+                                <svg id="eyeOffSignup" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                                    stroke-width="2" style="display:none;">
+                                    <path
+                                        d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24" />
+                                    <line x1="1" y1="1" x2="23" y2="23" />
+                                </svg>
+                            </button>
+                        </div>
+                        <div class="password-strength" id="passwordStrength" style="display:none;">
+                            <div class="strength-bar">
+                                <div class="strength-fill" id="strengthFill"></div>
+                            </div>
+                            <span class="strength-label" id="strengthLabel">Too short</span>
+                        </div>
+                        <span class="form-error" id="passwordError"></span>
+                    </div>
+
+                    <div class="form-group" id="confirmGroup">
+                        <label class="form-label" for="signupConfirm">Confirm Password</label>
+                        <div class="form-input-wrap">
+                            <span class="form-input-icon">
+                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                    <path
+                                        d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0 1 12 2.944a11.955 11.955 0 0 1-8.618 3.04A12.02 12.02 0 0 0 3 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z" />
+                                </svg>
+                            </span>
+                            <input type="password" id="signupConfirm" class="form-input"
+                                placeholder="Re-enter your password" autocomplete="new-password" required />
+                        </div>
+                        <span class="form-error" id="confirmError"></span>
+                    </div>
+
+                    <div class="form-general-error" id="generalError" style="display:none;"></div>
+
+                    <button type="submit" class="btn btn-success btn-full" id="signupSubmitBtn">
+                        <span class="btn-label">Create Account</span>
+                        <span class="btn-spinner" id="signupSpinner" style="display:none;"></span>
+                    </button>
+
+                </form>
+
+                <div class="auth-footer-link">
+                    Already have an account?
+                    <a href="login.html" class="auth-link">Sign in here</a>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="toast-container" id="toastContainer"></div>
+
+    <script src="auth.js"></script>
+    <script>
+        (function () {
+            const c = document.getElementById('bgParticles');
+            const cols = ['#a78bfa', '#60a5fa', '#34d399', '#f472b6'];
+            for (let i = 0; i < 14; i++) {
+                const p = document.createElement('div'); p.className = 'particle';
+                const s = Math.random() * 3 + 1, col = cols[Math.floor(Math.random() * cols.length)];
+                p.style.cssText = `width:${s}px;height:${s}px;left:${Math.random() * 100}%;background:${col};box-shadow:0 0 ${s * 3}px ${col};--dur:${Math.random() * 12 + 8}s;--delay:${Math.random() * 8}s;`;
+                c.appendChild(p);
+            }
+        })();
+
+        window.addEventListener('scroll', () => { document.getElementById('navbar').classList.toggle('scrolled', window.scrollY > 40); });
+        document.getElementById('hamburger').addEventListener('click', () => { document.getElementById('navLinks').classList.toggle('open'); });
+
+        document.addEventListener('DOMContentLoaded', () => {
+            redirectIfLoggedIn('simulator.html');
+            updateNavUser();
+        });
+
+        // Password toggle
+        document.getElementById('toggleSignupPass').addEventListener('click', function () {
+            const inp = document.getElementById('signupPassword');
+            const on = document.getElementById('eyeOnSignup');
+            const off = document.getElementById('eyeOffSignup');
+            if (inp.type === 'password') { inp.type = 'text'; on.style.display = 'none'; off.style.display = 'block'; }
+            else { inp.type = 'password'; on.style.display = 'block'; off.style.display = 'none'; }
+        });
+
+        // Password strength meter
+        document.getElementById('signupPassword').addEventListener('input', function () {
+            const val = this.value;
+            const strengthEl = document.getElementById('passwordStrength');
+            const fill = document.getElementById('strengthFill');
+            const label = document.getElementById('strengthLabel');
+            if (!val) { strengthEl.style.display = 'none'; return; }
+            strengthEl.style.display = 'flex';
+            let strength = 0;
+            if (val.length >= 6) strength++;
+            if (val.length >= 10) strength++;
+            if (/[A-Z]/.test(val)) strength++;
+            if (/[0-9]/.test(val)) strength++;
+            if (/[^A-Za-z0-9]/.test(val)) strength++;
+            const levels = [
+                { pct: '20%', color: '#f87171', text: 'Very Weak' },
+                { pct: '40%', color: '#fbbf24', text: 'Weak' },
+                { pct: '60%', color: '#fbbf24', text: 'Fair' },
+                { pct: '80%', color: '#34d399', text: 'Strong' },
+                { pct: '100%', color: '#34d399', text: 'Very Strong' },
+            ];
+            const lvl = levels[Math.min(strength, 4)];
+            fill.style.width = lvl.pct;
+            fill.style.background = lvl.color;
+            label.textContent = lvl.text;
+            label.style.color = lvl.color;
+        });
+
+        // Form submission
+        document.getElementById('signupForm').addEventListener('submit', function (e) {
+            e.preventDefault();
+            clearErrors();
+
+            const name = document.getElementById('signupName').value.trim();
+            const email = document.getElementById('signupEmail').value.trim();
+            const password = document.getElementById('signupPassword').value;
+            const confirm = document.getElementById('signupConfirm').value;
+            let valid = true;
+
+            if (!name || name.length < 2) { showFieldError('nameGroup', 'nameError', 'Please enter your full name (min. 2 characters).'); valid = false; }
+            if (!email) { showFieldError('emailGroup', 'emailError', 'Email address is required.'); valid = false; }
+            else if (!/\S+@\S+\.\S+/.test(email)) { showFieldError('emailGroup', 'emailError', 'Please enter a valid email address.'); valid = false; }
+            if (!password) { showFieldError('passwordGroup', 'passwordError', 'Password is required.'); valid = false; }
+            else if (password.length < 6) { showFieldError('passwordGroup', 'passwordError', 'Password must be at least 6 characters.'); valid = false; }
+            if (!confirm) { showFieldError('confirmGroup', 'confirmError', 'Please confirm your password.'); valid = false; }
+            else if (password !== confirm) { showFieldError('confirmGroup', 'confirmError', 'Passwords do not match.'); valid = false; }
+
+            if (!valid) return;
+
+            const submitBtn = document.getElementById('signupSubmitBtn');
+            const spinner = document.getElementById('signupSpinner');
+            const label = submitBtn.querySelector('.btn-label');
+            submitBtn.disabled = true;
+            label.style.opacity = '0';
+            spinner.style.display = 'inline-block';
+
+            setTimeout(() => {
+                const result = signupUser(name, email, password);
+                submitBtn.disabled = false;
+                label.style.opacity = '1';
+                spinner.style.display = 'none';
+
+                if (result.ok) {
+                    showAuthToast('success', '🎉', `Account created! Welcome, ${name}. Please log in.`);
+                    setTimeout(() => { window.location.href = 'login.html'; }, 1200);
+                } else {
+                    const ge = document.getElementById('generalError');
+                    ge.textContent = result.message;
+                    ge.style.display = 'flex';
+                    showAuthToast('error', '❌', result.message);
+                }
+            }, 700);
+        });
+
+        function showFieldError(groupId, errorId, msg) {
+            document.getElementById(groupId).classList.add('has-error');
+            document.getElementById(errorId).textContent = msg;
+        }
+        function clearErrors() {
+            ['nameGroup', 'emailGroup', 'passwordGroup', 'confirmGroup'].forEach(id => document.getElementById(id).classList.remove('has-error'));
+            ['nameError', 'emailError', 'passwordError', 'confirmError'].forEach(id => document.getElementById(id).textContent = '');
+            const ge = document.getElementById('generalError');
+            ge.style.display = 'none';
+            ge.textContent = '';
+        }
+    </script>
+</body>
+
+</html>

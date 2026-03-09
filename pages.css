@@ -744,6 +744,17 @@
     color: var(--teal);
 }
 
+.fc-orange .fc-icon {
+    background: rgba(251, 146, 60, 0.12);
+    color: #fb923c;
+    border: 1px solid rgba(251, 146, 60, 0.2);
+}
+
+.fc-orange .fc-tag {
+    background: rgba(251, 146, 60, 0.1);
+    color: #fb923c;
+}
+
 /* ── HOW IT WORKS TIMELINE ───────────────────── */
 .steps-timeline {
     display: flex;

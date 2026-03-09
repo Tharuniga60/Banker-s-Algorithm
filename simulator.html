@@ -184,6 +184,53 @@
         </div>
       </div>
 
+      <!-- Resource Request Card (shown after Safety Algorithm runs) -->
+      <div class="glass-card rr-card" id="rrCard" style="display:none;">
+        <div class="card-header">
+          <div class="card-icon orange">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M12 5v14M5 12l7-7 7 7" />
+            </svg>
+          </div>
+          <div>
+            <h2 class="card-title">Resource Request</h2>
+            <p class="card-subtitle">Simulate a process requesting resources</p>
+          </div>
+        </div>
+
+        <!-- Process Selector -->
+        <div class="input-group" style="margin-bottom:14px;">
+          <label for="rrProcess">Requesting Process</label>
+          <div class="input-wrapper">
+            <select id="rrProcess" class="rr-select">
+              <option value="">— Select Process —</option>
+            </select>
+          </div>
+        </div>
+
+        <!-- Request Vector -->
+        <div class="section-label">
+          <span class="label-dot orange"></span>Request Vector
+        </div>
+        <div class="matrix-wrapper" id="rrRequestWrapper"></div>
+
+        <div class="action-row" style="margin-top:16px;">
+          <button class="btn btn-orange" id="rrRunBtn">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M12 5v14M5 12l7-7 7 7" />
+            </svg>
+            Check Request
+          </button>
+          <button class="btn btn-ghost" id="rrResetBtn">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8" />
+              <path d="M3 3v5h5" />
+            </svg>
+            Clear
+          </button>
+        </div>
+      </div>
+
     </section>
 
     <!-- ====== RIGHT PANEL ====== -->
@@ -216,6 +263,7 @@
             <span class="pill">✦ Need Matrix</span>
             <span class="pill">✦ Safe Sequence</span>
             <span class="pill">✦ Step-by-Step</span>
+            <span class="pill">✦ Resource Request</span>
           </div>
         </div>
       </div>
@@ -332,6 +380,44 @@
               </div>
             </div>
           </div>
+        </div>
+
+        <!-- Resource Request Result Card -->
+        <div class="glass-card rr-result-card" id="rrResultCard" style="display:none;">
+          <div class="card-header">
+            <div class="card-icon orange" id="rrResultIcon">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M12 5v14M5 12l7-7 7 7" />
+              </svg>
+            </div>
+            <div>
+              <h2 class="card-title">Resource Request Result</h2>
+              <p class="card-subtitle" id="rrResultSubtitle">—</p>
+            </div>
+          </div>
+
+          <!-- Grant / Deny Banner -->
+          <div class="rr-verdict" id="rrVerdict">
+            <div class="rr-verdict-icon" id="rrVerdictIcon"></div>
+            <div class="rr-verdict-text">
+              <div class="rr-verdict-label" id="rrVerdictLabel">—</div>
+              <div class="rr-verdict-desc" id="rrVerdictDesc">—</div>
+            </div>
+          </div>
+
+          <!-- Updated Safe Sequence (if granted) -->
+          <div id="rrSeqSection" style="display:none;">
+            <div class="section-label" style="margin-top:14px;">
+              <span class="label-dot cyan"></span>New Safe Sequence After Grant
+            </div>
+            <div class="sequence-vis" id="rrSeqVis"></div>
+          </div>
+
+          <!-- Step trace for resource request -->
+          <div class="section-label" style="margin-top:16px;">
+            <span class="label-dot pink"></span>Request Algorithm Trace
+          </div>
+          <div class="steps-container" id="rrStepsContainer"></div>
         </div>
 
       </div>

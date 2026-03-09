@@ -32,6 +32,7 @@ const themeIcon = document.getElementById('themeIcon');
 document.addEventListener('DOMContentLoaded', () => {
   createParticles();
   bindEvents();
+  bindRREvents();
 });
 
 // ─── PARTICLES ────────────────────────────────
@@ -203,23 +204,23 @@ function handleRandom() {
     {
       processes: 5,
       resources: 3,
-      allocation: [[0,1,0],[2,0,0],[3,0,2],[2,1,1],[0,0,2]],
-      max: [[7,5,3],[3,2,2],[9,0,2],[2,2,2],[4,3,3]],
-      available: [3,3,2]
+      allocation: [[0, 1, 0], [2, 0, 0], [3, 0, 2], [2, 1, 1], [0, 0, 2]],
+      max: [[7, 5, 3], [3, 2, 2], [9, 0, 2], [2, 2, 2], [4, 3, 3]],
+      available: [3, 3, 2]
     },
     {
       processes: 4,
       resources: 3,
-      allocation: [[0,0,1],[1,0,0],[1,3,0],[0,1,1]],
-      max: [[0,0,1],[1,7,5],[2,3,5],[0,6,5]],
-      available: [1,5,2]
+      allocation: [[0, 0, 1], [1, 0, 0], [1, 3, 0], [0, 1, 1]],
+      max: [[0, 0, 1], [1, 7, 5], [2, 3, 5], [0, 6, 5]],
+      available: [1, 5, 2]
     },
     {
       processes: 3,
       resources: 4,
-      allocation: [[0,0,1,2],[1,0,0,0],[1,3,5,4]],
-      max: [[0,0,1,2],[1,7,5,0],[2,3,5,6]],
-      available: [1,5,2,0]
+      allocation: [[0, 0, 1, 2], [1, 0, 0, 0], [1, 3, 5, 4]],
+      max: [[0, 0, 1, 2], [1, 7, 5, 0], [2, 3, 5, 6]],
+      available: [1, 5, 2, 0]
     }
   ];
   const ex = examples[Math.floor(Math.random() * examples.length)];
@@ -403,6 +404,10 @@ function handleRun() {
   const execBarCard = document.getElementById('execBarCard');
   execBarCard.style.display = isSafe ? 'block' : 'none';
 
+  // Always show Resource Request card after safety algorithm runs
+  // (user can test requests regardless of current state)
+  showRRCard();
+
   runBtn.classList.add('pulse');
   setTimeout(() => runBtn.classList.remove('pulse'), 700);
 
@@ -579,6 +584,9 @@ function handleReset() {
   document.getElementById('maxWrapper').innerHTML = '';
   document.getElementById('availableWrapper').innerHTML = '';
 
+  // Hide Resource Request card and clear its result
+  hideRRCard();
+
   welcomeCard.style.display = 'flex';
   resultsArea.style.display = 'none';
 
@@ -598,3 +606,365 @@ function showToast(type, icon, message) {
     setTimeout(() => container.removeChild(toast), 350);
   }, 3500);
 }
+
+// ═══════════════════════════════════════════════════════════
+//   RESOURCE REQUEST ALGORITHM
+//   Implements Banker's Resource-Request Algorithm exactly:
+//   Step 1 — Request[i] ≤ Need[i]
+//   Step 2 — Request[i] ≤ Available
+//   Step 3 — Pretend-grant → run Safety Algorithm → rollback if unsafe
+// ═══════════════════════════════════════════════════════════
+
+// ─── SHOW / HIDE RR CARD ──────────────────────
+function showRRCard() {
+  const rrCard = document.getElementById('rrCard');
+  rrCard.style.display = 'block';
+  rrCard.classList.add('fade-in');
+  populateRRProcessSelector();
+  buildRRRequestVector();
+}
+
+function hideRRCard() {
+  document.getElementById('rrCard').style.display = 'none';
+  document.getElementById('rrResultCard').style.display = 'none';
+}
+
+// ─── POPULATE PROCESS SELECTOR ────────────────
+function populateRRProcessSelector() {
+  const sel = document.getElementById('rrProcess');
+  // Remember previous selection if still valid
+  const prev = sel.value;
+  sel.innerHTML = '<option value="">— Select Process —</option>';
+  for (let i = 0; i < numProcesses; i++) {
+    const opt = document.createElement('option');
+    opt.value = i;
+    opt.textContent = `P${i}`;
+    sel.appendChild(opt);
+  }
+  if (prev !== '' && parseInt(prev) < numProcesses) sel.value = prev;
+}
+
+// ─── BUILD REQUEST VECTOR INPUT ROW ───────────
+function buildRRRequestVector() {
+  const wrapper = document.getElementById('rrRequestWrapper');
+  const table = document.createElement('table');
+  table.className = 'matrix-table';
+
+  // Header
+  const thead = document.createElement('thead');
+  const hRow = document.createElement('tr');
+  hRow.innerHTML = '<th></th>';
+  for (let j = 0; j < numResources; j++) {
+    const th = document.createElement('th');
+    th.textContent = `R${j}`;
+    hRow.appendChild(th);
+  }
+  thead.appendChild(hRow);
+  table.appendChild(thead);
+
+  // Input row
+  const tbody = document.createElement('tbody');
+  const row = document.createElement('tr');
+  const lbl = document.createElement('td');
+  lbl.className = 'row-label';
+  lbl.textContent = 'Request';
+  row.appendChild(lbl);
+  for (let j = 0; j < numResources; j++) {
+    const td = document.createElement('td');
+    const input = document.createElement('input');
+    input.type = 'number';
+    input.min = '0';
+    input.max = '99';
+    input.value = '0';
+    input.className = 'matrix-input';
+    input.id = `rr_req_${j}`;
+    td.appendChild(input);
+    row.appendChild(td);
+  }
+  tbody.appendChild(row);
+  table.appendChild(tbody);
+
+  wrapper.innerHTML = '';
+  wrapper.appendChild(table);
+}
+
+// ─── READ REQUEST VECTOR FROM UI ──────────────
+function readRRVector() {
+  const req = [];
+  for (let j = 0; j < numResources; j++) {
+    req.push(parseInt(document.getElementById(`rr_req_${j}`)?.value) || 0);
+  }
+  return req;
+}
+
+// ─── CORE: RESOURCE REQUEST ALGORITHM ─────────
+/**
+ * Runs Banker's Resource Request Algorithm.
+ * @param {number} procIdx  - Index of requesting process (0-based)
+ * @param {number[]} request - Request vector
+ * @returns {{ granted: boolean, newSafeSeq: number[]|null, steps: object[] }}
+ */
+function resourceRequestAlgorithm(procIdx, request) {
+  const steps = [];
+
+  // ── Step 0: Show initial state ─────────────
+  steps.push({
+    type: 'info',
+    title: `Initialization — P${procIdx} requests [${request.join(', ')}]`,
+    detail:
+      `Need[P${procIdx}]      = [${needMatrix[procIdx].join(', ')}]\n` +
+      `Available          = [${availableVector.join(', ')}]\n` +
+      `Request[P${procIdx}]   = [${request.join(', ')}]`
+  });
+
+  // ── Step 1: Request[i] ≤ Need[i] ───────────
+  const exceedsNeed = request.some((req, j) => req > needMatrix[procIdx][j]);
+  if (exceedsNeed) {
+    const detail = request.map((req, j) =>
+      req > needMatrix[procIdx][j]
+        ? `R${j}: Request=${req} > Need=${needMatrix[procIdx][j]} ✗`
+        : `R${j}: Request=${req} ≤ Need=${needMatrix[procIdx][j]} ✓`
+    ).join('\n');
+    steps.push({
+      type: 'fail',
+      title: `Step 1 FAILED — Request exceeds Need for P${procIdx}`,
+      detail: detail + '\n→ Process has exceeded its maximum claim. Error condition.'
+    });
+    return { granted: false, newSafeSeq: null, steps };
+  }
+  steps.push({
+    type: 'success',
+    title: `Step 1 PASSED — Request[P${procIdx}] ≤ Need[P${procIdx}]`,
+    detail: request.map((req, j) =>
+      `R${j}: Request=${req} ≤ Need=${needMatrix[procIdx][j]} ✓`
+    ).join('\n')
+  });
+
+  // ── Step 2: Request[i] ≤ Available ─────────
+  const exceedsAvail = request.some((req, j) => req > availableVector[j]);
+  if (exceedsAvail) {
+    const detail = request.map((req, j) =>
+      req > availableVector[j]
+        ? `R${j}: Request=${req} > Available=${availableVector[j]} ✗`
+        : `R${j}: Request=${req} ≤ Available=${availableVector[j]} ✓`
+    ).join('\n');
+    steps.push({
+      type: 'fail',
+      title: `Step 2 FAILED — Resources not available; P${procIdx} must wait`,
+      detail: detail + '\n→ Insufficient resources. P' + procIdx + ' is blocked.'
+    });
+    return { granted: false, newSafeSeq: null, steps };
+  }
+  steps.push({
+    type: 'success',
+    title: `Step 2 PASSED — Request[P${procIdx}] ≤ Available`,
+    detail: request.map((req, j) =>
+      `R${j}: Request=${req} ≤ Available=${availableVector[j]} ✓`
+    ).join('\n')
+  });
+
+  // ── Step 3: Pretend-grant and run safety ───
+  // Save originals
+  const origAvailable = [...availableVector];
+  const origAllocation = allocationMatrix.map(r => [...r]);
+  const origNeed = needMatrix.map(r => [...r]);
+
+  // Temporarily apply the request
+  for (let j = 0; j < numResources; j++) {
+    availableVector[j] -= request[j];
+    allocationMatrix[procIdx][j] += request[j];
+    needMatrix[procIdx][j] -= request[j];
+  }
+
+  steps.push({
+    type: 'info',
+    title: 'Step 3 — Pretend-Grant: Temporarily updating state',
+    detail:
+      `Available  : [${origAvailable.join(', ')}] → [${availableVector.join(', ')}]\n` +
+      `Alloc[P${procIdx}]: [${origAllocation[procIdx].join(', ')}] → [${allocationMatrix[procIdx].join(', ')}]\n` +
+      `Need[P${procIdx}] : [${origNeed[procIdx].join(', ')}] → [${needMatrix[procIdx].join(', ')}]\n` +
+      `Now running Safety Algorithm on modified state…`
+  });
+
+  // Run safety algorithm on modified state
+  const { isSafe, safeSequence, steps: safetySteps } = isSafeState();
+
+  // Roll back regardless (we only commit if safe)
+  availableVector = origAvailable;
+  allocationMatrix = origAllocation;
+  needMatrix = origNeed;
+
+  if (isSafe) {
+    steps.push({
+      type: 'success',
+      title: `Step 3 PASSED — Modified state is SAFE`,
+      detail:
+        `Safety Algorithm found a safe sequence: ${safeSequence.map(p => `P${p}`).join(' → ')}\n` +
+        `→ Request GRANTED. Resources allocated to P${procIdx}.`
+    });
+    // Embed a summary of the safety trace
+    steps.push({
+      type: 'info',
+      title: 'Safety Algorithm Trace (on modified state)',
+      detail: safetySteps
+        .filter(s => s.type === 'success' || s.type === 'fail')
+        .map(s => s.title + ': ' + s.detail.split('\n')[0])
+        .join('\n') || 'See safety steps above.'
+    });
+    return { granted: true, newSafeSeq: safeSequence, steps };
+  } else {
+    steps.push({
+      type: 'fail',
+      title: `Step 3 FAILED — Modified state is UNSAFE`,
+      detail:
+        `Safety Algorithm could NOT find a safe sequence for the modified state.\n` +
+        `Only ${safeSequence.length}/${numProcesses} processes could finish.\n` +
+        `→ Request DENIED. Original state restored. P${procIdx} must wait.`
+    });
+    return { granted: false, newSafeSeq: null, steps };
+  }
+}
+
+// ─── RUN HANDLER FOR RESOURCE REQUEST ─────────
+function handleRRRun() {
+  // Validate that safety algorithm has been run first
+  if (!numProcesses || !numResources) {
+    showToast('error', '⚠️', 'Run the Safety Algorithm first!');
+    return;
+  }
+
+  const procSel = document.getElementById('rrProcess');
+  const procIdx = parseInt(procSel.value);
+  if (isNaN(procIdx)) {
+    showToast('error', '⚠️', 'Please select a requesting process.');
+    return;
+  }
+
+  const request = readRRVector();
+
+  // Basic negativity guard
+  if (request.some(v => v < 0)) {
+    showToast('error', '⚠️', 'Request values must be non-negative.');
+    return;
+  }
+
+  // All zeros is trivially safe but useless
+  if (request.every(v => v === 0)) {
+    showToast('info', 'ℹ️', 'Requesting zero resources — trivially granted with no state change.');
+    return;
+  }
+
+  const rrRunBtn = document.getElementById('rrRunBtn');
+  rrRunBtn.classList.add('pulse');
+  setTimeout(() => rrRunBtn.classList.remove('pulse'), 700);
+
+  const { granted, newSafeSeq, steps } = resourceRequestAlgorithm(procIdx, request);
+
+  displayRRResult(procIdx, request, granted, newSafeSeq, steps);
+
+  showToast(
+    granted ? 'success' : 'error',
+    granted ? '✅' : '❌',
+    granted
+      ? `Request by P${procIdx} GRANTED! New sequence: ${newSafeSeq.map(p => `P${p}`).join('→')}`
+      : `Request by P${procIdx} DENIED — would cause unsafe state or exceeds limits.`
+  );
+}
+
+// ─── DISPLAY RR RESULT ────────────────────────
+function displayRRResult(procIdx, request, granted, newSafeSeq, steps) {
+  const card = document.getElementById('rrResultCard');
+  const subtitle = document.getElementById('rrResultSubtitle');
+  const verdict = document.getElementById('rrVerdict');
+  const verdictIcon = document.getElementById('rrVerdictIcon');
+  const verdictLabel = document.getElementById('rrVerdictLabel');
+  const verdictDesc = document.getElementById('rrVerdictDesc');
+  const rrSeqSection = document.getElementById('rrSeqSection');
+  const rrSeqVis = document.getElementById('rrSeqVis');
+  const rrSteps = document.getElementById('rrStepsContainer');
+  const rrResIcon = document.getElementById('rrResultIcon');
+
+  subtitle.textContent = `P${procIdx} requested [${request.join(', ')}]`;
+
+  // Verdict styling
+  verdict.className = 'rr-verdict ' + (granted ? 'granted' : 'denied');
+  verdictIcon.textContent = granted ? '✅' : '🚫';
+  verdictLabel.textContent = granted ? 'REQUEST GRANTED' : 'REQUEST DENIED';
+  verdictDesc.textContent = granted
+    ? `P${procIdx}'s request for [${request.join(', ')}] is safe and has been allocated.`
+    : `P${procIdx}'s request for [${request.join(', ')}] cannot be granted — would cause an unsafe state or exceeds limits.`;
+
+  // Card icon colour change
+  rrResIcon.className = 'card-icon orange ' + (granted ? 'granted' : 'denied');
+
+  // New safe sequence
+  if (granted && newSafeSeq) {
+    rrSeqSection.style.display = 'block';
+    rrSeqVis.innerHTML = '';
+    newSafeSeq.forEach((proc, idx) => {
+      const node = document.createElement('div');
+      node.className = 'seq-node';
+      node.style.animationDelay = `${idx * 0.15}s`;
+      node.innerHTML = `<div class="proc-chip"${proc === procIdx ? ' style="background:linear-gradient(135deg,#ea580c,#fb923c);box-shadow:0 4px 12px rgba(234,88,12,0.4);"' : ''}>P${proc}</div>${idx < newSafeSeq.length - 1 ? '<span class="arrow">→</span>' : ''}`;
+      rrSeqVis.appendChild(node);
+    });
+  } else {
+    rrSeqSection.style.display = 'none';
+  }
+
+  // Step trace
+  rrSteps.innerHTML = '';
+  steps.forEach((step, idx) => {
+    const item = document.createElement('div');
+    item.className = 'step-item';
+    item.style.animationDelay = `${idx * 0.08}s`;
+
+    const badge = document.createElement('div');
+    badge.className = `step-badge ${step.type}`;
+    badge.textContent = idx + 1;
+
+    const content = document.createElement('div');
+    content.className = 'step-content';
+
+    const title = document.createElement('div');
+    title.className = 'step-title';
+    title.textContent = step.title;
+
+    const detail = document.createElement('div');
+    detail.className = 'step-detail';
+    detail.innerHTML = step.detail
+      .replace(/\[([^\]]+)\]/g, '<span>[$1]</span>')
+      .replace(/\n/g, '<br>');
+
+    content.appendChild(title);
+    content.appendChild(detail);
+    item.appendChild(badge);
+    item.appendChild(content);
+    rrSteps.appendChild(item);
+  });
+
+  // Show the card
+  card.style.display = 'block';
+  card.classList.add('fade-in');
+  card.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+}
+
+// ─── CLEAR RR RESULT ──────────────────────────
+function handleRRReset() {
+  // Zero out request vector inputs
+  for (let j = 0; j < numResources; j++) {
+    const el = document.getElementById(`rr_req_${j}`);
+    if (el) el.value = '0';
+  }
+  document.getElementById('rrProcess').value = '';
+  document.getElementById('rrResultCard').style.display = 'none';
+  showToast('info', '🔄', 'Resource Request cleared.');
+}
+
+// ─── BIND RR EVENTS ───────────────────────────
+// Called once at DOMContentLoaded
+function bindRREvents() {
+  document.getElementById('rrRunBtn').addEventListener('click', handleRRRun);
+  document.getElementById('rrResetBtn').addEventListener('click', handleRRReset);
+}
+
